@@ -87,7 +87,49 @@ const QuizApp: React.FC = () => {
     }
   }, [questions, userResponses, markingScheme]);
 
-  
+const [hasLoadedSavedProgress, setHasLoadedSavedProgress] = useState(false);
+
+// Load saved quiz state if it exists
+useEffect(() => {
+  const savedProgress = localStorage.getItem('quizProgress');
+  if (savedProgress) {
+    const {
+      currentQuestionIndex,
+      userResponses,
+      timeLeft,
+      visitedIndices,
+      markedIndices,
+      questions: savedQuestions
+    } = JSON.parse(savedProgress);
+
+    setQuestions(savedQuestions);
+    setUserResponses(userResponses);
+    setCurrentQuestionIndex(currentQuestionIndex);
+    setTimeLeft(timeLeft);
+    setVisitedIndices(new Set(visitedIndices));
+    setMarkedIndices(new Set(markedIndices));
+    setAppState(AppState.QUIZ); // Resume quiz automatically
+    setHasLoadedSavedProgress(true); // mark that we have loaded saved progress
+  }
+}, []);
+
+
+// Save quiz progress to localStorage on changes
+useEffect(() => {
+  if (appState === AppState.QUIZ && questions.length > 0) {
+    const quizProgress = {
+      currentQuestionIndex,
+      userResponses,
+      timeLeft,
+      visitedIndices: Array.from(visitedIndices),
+      markedIndices: Array.from(markedIndices),
+      questions
+    };
+    localStorage.setItem('quizProgress', JSON.stringify(quizProgress));
+  }
+}, [currentQuestionIndex, userResponses, timeLeft, visitedIndices, markedIndices, questions, appState]);
+
+
   // Timer Effect
   useEffect(() => {
     let timer: number;
@@ -124,39 +166,51 @@ const QuizApp: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location]);
 
-  const handleStartAI = async (config: QuizConfig) => {
-    setMarkingScheme(config.markingScheme);
-    setAppState(AppState.GENERATING);
-    setErrorMsg("");
-    try {
-      const generatedQuestions = await generateQuiz(config.topic, config.difficulty, config.questionCount, config.classLevel);
-      setQuestions(generatedQuestions);
-      initializeQuiz(generatedQuestions, config.timeLimit);
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Failed to generate quiz. Please check your API Key or try again.");
-      setAppState(AppState.ERROR);
-    }
-  };
-
-  const handleStartManual = (manualQuestions: Question[], scheme: MarkingScheme, limit: number) => {
-    setMarkingScheme(scheme);
+const handleStartManual = (manualQuestions: Question[], scheme: MarkingScheme, limit: number) => {
+  setMarkingScheme(scheme);
+  
+  if (!hasLoadedSavedProgress) {
     setQuestions(manualQuestions);
     initializeQuiz(manualQuestions, limit);
-  };
+  }
+};
 
-  const initializeQuiz = (qs: Question[], minutes: number) => {
-    setUserResponses(qs.map(q => ({
-        questionId: q.id,
-        selectedOptionId: "",
-        reasoning: ""
-      })));
-    setTimeLeft(minutes * 60);
-    setVisitedIndices(new Set([0]));
-    setMarkedIndices(new Set());
-    setCurrentQuestionIndex(0);
-    setAppState(AppState.QUIZ);
-  };
+const handleStartAI = async (config: QuizConfig) => {
+  setMarkingScheme(config.markingScheme);
+  setAppState(AppState.GENERATING);
+  setErrorMsg("");
+  
+  if (hasLoadedSavedProgress) return; // don’t overwrite saved progress
+
+  try {
+    const generatedQuestions = await generateQuiz(config.topic, config.difficulty, config.questionCount, config.classLevel);
+    setQuestions(generatedQuestions);
+    initializeQuiz(generatedQuestions, config.timeLimit);
+  } catch (err) {
+    console.error(err);
+    setErrorMsg("Failed to generate quiz. Please check your API Key or try again.");
+    setAppState(AppState.ERROR);
+  }
+};
+
+const initializeQuiz = (qs: Question[], minutes: number) => {
+  // Only initialize userResponses if they are empty
+  setUserResponses(prev => (prev.length > 0 ? prev : qs.map(q => ({
+      questionId: q.id,
+      selectedOptionId: "",
+      reasoning: ""
+  }))));
+
+  // Only set timeLeft if it hasn't been restored from saved progress
+  setTimeLeft(prev => (prev && prev > 0) ? prev : minutes * 60);
+
+  setVisitedIndices(prev => (prev.size > 0 ? prev : new Set([0])));
+  setMarkedIndices(prev => (prev.size > 0 ? prev : new Set()));
+  setCurrentQuestionIndex(prev => (prev > 0 ? prev : 0));
+  setAppState(AppState.QUIZ);
+};
+
+
 
   const handleOptionSelect = (optionId: string) => {
     const updatedResponses = [...userResponses];
@@ -217,6 +271,8 @@ const QuizApp: React.FC = () => {
     setUserResponses([]);
     setCurrentQuestionIndex(0);
     setQuizResult(null);
+    localStorage.removeItem('quizProgress');
+
   };
 
   const handleGoHome = () => {
