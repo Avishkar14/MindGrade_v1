@@ -1,10 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { QuizResult, Question, UserResponse, MarkingScheme } from '../types';
 import { Icons } from '../constants';
 import MathRenderer from './MathRenderer';
 
 interface ResultsViewProps {
-  result: QuizResult;
+  result?: QuizResult | null;
   questions: Question[];
   userResponses: UserResponse[];
   markingScheme: MarkingScheme;
@@ -12,9 +13,19 @@ interface ResultsViewProps {
 }
 
 const ResultsView: React.FC<ResultsViewProps> = ({ result, questions, userResponses, markingScheme, onRestart }) => {
-  const percentage = Math.round((result.totalScore / result.maxScore) * 100);
-  
-  // Determine Grade Color
+  const navigate = useNavigate();
+  if (!result || result.status === 'pending') {
+    return (
+      <div className="max-w-4xl mx-auto animate-fade-in-up p-12 text-center">
+        <h2 className="text-3xl font-bold text-slate-900 mb-4">Thank you for attempting the test.</h2>
+        <div className="flex justify-center">
+          <button onClick={() => { onRestart(); navigate('/'); }} className="px-6 py-3 bg-indigo-600 text-white rounded-full">Back to Main Page</button>
+        </div>
+      </div>
+    );
+  }
+
+  const percentage = result.maxScore > 0 ? Math.round((result.totalScore / result.maxScore) * 100) : 0;
   let gradeColor = "text-red-600";
   let gradeBg = "bg-red-50 border-red-200";
   if (percentage >= 80) {
@@ -34,9 +45,9 @@ const ResultsView: React.FC<ResultsViewProps> = ({ result, questions, userRespon
           <p className="text-slate-700 text-lg"><MathRenderer text={result.summary} /></p>
         </div>
         <div className="flex flex-col items-center justify-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100 min-w-[200px]">
-          <span className="text-sm text-slate-500 uppercase tracking-wider font-semibold mb-1">Total Score</span>
+          <span className="text-sm text-slate-500 uppercase tracking-wider font-semibold mb-1">Score (normalized)</span>
           <span className={`text-5xl font-black ${gradeColor}`}>
-            {result.totalScore}<span className="text-2xl text-slate-400">/{result.maxScore}</span>
+            {result.marksOutOf4?.toFixed?.(1) ?? '—'}<span className="text-2xl text-slate-400">/4</span>
           </span>
           <span className="text-sm font-medium text-slate-500 mt-2">{percentage}% Accuracy</span>
         </div>

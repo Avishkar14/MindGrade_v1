@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppState, Question, UserResponse, QuizResult, MarkingScheme, QuizConfig } from '../types';
 import { generateQuiz, evaluateQuiz } from '../services/geminiService';
 import QuizSetup from './QuizSetup';
@@ -8,9 +9,10 @@ import LoadingSpinner from './LoadingSpinner';
 import MindGradeLogo from './MindGradeLogo';
 import QuestionNavigation from './QuestionNavigation';
 import LandingPage from './LandingPage';
-import UserMenuButton from './UserMenuButton';
 
 const QuizApp: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [appState, setAppState] = useState<AppState>(AppState.HOME);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [userResponses, setUserResponses] = useState<UserResponse[]>([]);
@@ -30,15 +32,62 @@ const QuizApp: React.FC = () => {
     setAppState(AppState.SUBMITTING);
     try {
       const result = await evaluateQuiz(questions, userResponses, markingScheme);
-      setQuizResult(result);
+      // Normalize marks to a 4-point scale
+      const marksOutOf4 = result.maxScore > 0 ? (result.totalScore / result.maxScore) * 4 : 0;
+      const completedResult = { ...result, status: 'completed' as const, marksOutOf4 };
+      setQuizResult(completedResult);
+      // Save attempt locally
+      try {
+        const student = JSON.parse(localStorage.getItem('studentDetails') || 'null');
+        const attempts = JSON.parse(localStorage.getItem('quizAttempts') || '[]');
+        attempts.push({
+          id: `attempt_${Date.now()}`,
+          student,
+          class: student?.class,
+          quizId: 'manual',
+          answers: userResponses,
+          status: 'completed',
+          marksOutOf4,
+          rawResult: completedResult,
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('quizAttempts', JSON.stringify(attempts));
+      } catch (e) { /* ignore storage errors */ }
       setAppState(AppState.RESULTS);
     } catch (err) {
-      console.error(err);
-      setErrorMsg("Failed to evaluate quiz. Please try again.");
-      setAppState(AppState.ERROR);
+      console.error('Evaluation failed:', err);
+      // On AI failure, create a pending result and save attempt locally with pending status
+      const pendingResult = {
+        evaluations: [],
+        totalScore: 0,
+        maxScore: 0,
+        summary: 'Your answers have been submitted. Results will be shown after a while.',
+        status: 'pending' as const,
+        marksOutOf4: undefined
+      };
+      setQuizResult(pendingResult as any);
+      try {
+        const student = JSON.parse(localStorage.getItem('studentDetails') || 'null');
+        const attempts = JSON.parse(localStorage.getItem('quizAttempts') || '[]');
+        attempts.push({
+          id: `attempt_${Date.now()}`,
+          student,
+          class: student?.class,
+          quizId: 'manual',
+          answers: userResponses,
+          status: 'pending',
+          marksOutOf4: null,
+          rawError: (err && (err as any).message) || String(err),
+          timestamp: new Date().toISOString()
+        });
+        localStorage.setItem('quizAttempts', JSON.stringify(attempts));
+      } catch (e) { /* ignore storage errors */ }
+      // Show results page with pending message
+      setAppState(AppState.RESULTS);
     }
   }, [questions, userResponses, markingScheme]);
 
+  
   // Timer Effect
   useEffect(() => {
     let timer: number;
@@ -56,6 +105,24 @@ const QuizApp: React.FC = () => {
     }
     return () => clearInterval(timer);
   }, [appState, timeLeft, submitQuiz]);
+
+  // If navigated with preset (from TestSelection), start quiz or show placeholder
+  useEffect(() => {
+    const state: any = (location && (location as any).state) || {};
+    if (state && state.preset) {
+      const preset = state.preset as any;
+      // If questions provided in state, start manual; otherwise, set QUIZ state so UI can show placeholder
+      if (state.manualQuestions && Array.isArray(state.manualQuestions) && state.manualQuestions.length > 0) {
+        handleStartManual(state.manualQuestions as Question[], preset.markingScheme, preset.timeLimit || 10);
+      } else {
+        // Prepare empty questions for future; show notice in UI when questions are empty
+        setMarkingScheme(preset.markingScheme || markingScheme);
+        setQuestions([]);
+        setAppState(AppState.QUIZ);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location]);
 
   const handleStartAI = async (config: QuizConfig) => {
     setMarkingScheme(config.markingScheme);
@@ -229,6 +296,7 @@ const QuizApp: React.FC = () => {
                     onPrev={handlePrev}
                     isMarked={markedIndices.has(currentQuestionIndex)}
                     onToggleMark={handleToggleMark}
+                  disabled={appState === AppState.SUBMITTING}
                 />
              </div>
              
@@ -256,6 +324,19 @@ const QuizApp: React.FC = () => {
                 />
              )}
           </>
+        )}
+
+        {appState === AppState.QUIZ && questions.length === 0 && (
+          <div className="w-full h-full flex items-center justify-center p-6">
+            <div className="max-w-xl w-full bg-white p-8 rounded-2xl shadow text-center border border-slate-200">
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Questions coming soon</h3>
+              <p className="text-slate-600 mb-6">This test has not been populated with questions yet. We'll add questions for this class shortly.</p>
+              <div className="flex gap-4 justify-center">
+                <button onClick={() => navigate('/test-selection')} className="px-4 py-2 bg-indigo-600 text-white rounded-full">Back to Tests</button>
+                <button disabled className="px-4 py-2 bg-slate-200 text-slate-400 rounded-full">Attempt (disabled)</button>
+              </div>
+            </div>
+          </div>
         )}
 
         {appState === AppState.SUBMITTING && (
@@ -292,8 +373,7 @@ const QuizApp: React.FC = () => {
         )}
       </main>
       
-      {/* Floating User Account Button */}
-      <UserMenuButton />
+      {/* Floating User Account Button removed for student-only flow */}
     </div>
   );
 };

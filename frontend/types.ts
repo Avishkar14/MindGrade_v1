@@ -59,6 +59,9 @@ export interface QuizResult {
   totalScore: number;
   maxScore: number;
   summary: string;
+  // Optional runtime fields for frontend-only status tracking
+  status?: 'completed' | 'pending';
+  marksOutOf4?: number;
 }
 
 export enum AppState {

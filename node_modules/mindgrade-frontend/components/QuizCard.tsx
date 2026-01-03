@@ -14,6 +14,7 @@ interface QuizCardProps {
   onPrev: () => void;
   isMarked: boolean;
   onToggleMark: () => void;
+  disabled?: boolean;
 }
 
 const QuizCard: React.FC<QuizCardProps> = ({
@@ -27,6 +28,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
   onPrev,
   isMarked,
   onToggleMark
+  , disabled = false
 }) => {
   const currentReason = response?.reasoning || "";
   const currentSelection = response?.selectedOptionId || "";
@@ -67,30 +69,32 @@ const QuizCard: React.FC<QuizCardProps> = ({
             {/* Options Grid */}
             <div className="space-y-4 mb-10">
             {question.options.map((option) => (
-                <button
-                key={option.id}
-                onClick={() => onOptionSelect(option.id)}
-                className={`
-                    w-full relative p-5 rounded-xl border-2 text-left transition-all duration-200 flex items-center group
-                    ${currentSelection === option.id 
-                    ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' 
-                    : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
-                    }
-                `}
-                >
-                <div className={`
-                    w-8 h-8 rounded-full border-2 mr-5 flex items-center justify-center flex-shrink-0 transition-colors
-                    ${currentSelection === option.id 
-                    ? 'border-indigo-600 bg-indigo-600' 
-                    : 'border-slate-300 group-hover:border-indigo-400'
-                    }
-                `}>
-                    {currentSelection === option.id && <div className="w-3 h-3 bg-white rounded-full" />}
-                </div>
-                <span className={`text-lg md:text-xl font-medium leading-relaxed ${currentSelection === option.id ? 'text-indigo-900' : 'text-slate-700'}`}>
-                    <MathRenderer text={option.text} inline />
-                </span>
-                </button>
+              <button
+              key={option.id}
+              onClick={() => !disabled && onOptionSelect(option.id)}
+              disabled={disabled}
+              className={`
+                w-full relative p-5 rounded-xl border-2 text-left transition-all duration-200 flex items-center group
+                ${currentSelection === option.id 
+                ? 'border-indigo-600 bg-indigo-50/50 shadow-sm' 
+                : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                }
+                ${disabled ? 'cursor-not-allowed opacity-80' : ''}
+              `}
+              >
+              <div className={`
+                w-8 h-8 rounded-full border-2 mr-5 flex items-center justify-center flex-shrink-0 transition-colors
+                ${currentSelection === option.id 
+                ? 'border-indigo-600 bg-indigo-600' 
+                : 'border-slate-300 group-hover:border-indigo-400'
+                }
+              `}>
+                {currentSelection === option.id && <div className="w-3 h-3 bg-white rounded-full" />}
+              </div>
+              <span className={`text-lg md:text-xl font-medium leading-relaxed ${currentSelection === option.id ? 'text-indigo-900' : 'text-slate-700'}`}>
+                <MathRenderer text={option.text} inline />
+              </span>
+              </button>
             ))}
             </div>
 
@@ -102,10 +106,11 @@ const QuizCard: React.FC<QuizCardProps> = ({
             </label>
             <p className="text-sm text-slate-500 mb-3">Explain the steps you took to arrive at your answer.</p>
             <textarea
-                value={currentReason}
-                onChange={(e) => onReasonChange(e.target.value)}
-                placeholder="Type your reasoning here... (LaTeX $...$ supported)"
-                className="w-full h-48 p-5 rounded-xl border border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all resize-none text-slate-700 placeholder-slate-400 bg-white shadow-inner text-lg font-sans leading-relaxed"
+              value={currentReason}
+              onChange={(e) => !disabled && onReasonChange(e.target.value)}
+              placeholder="Type your reasoning here... (LaTeX $...$ supported)"
+              disabled={disabled}
+              className={`w-full h-48 p-5 rounded-xl border border-slate-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:outline-none transition-all resize-none text-slate-700 placeholder-slate-400 bg-white shadow-inner text-lg font-sans leading-relaxed ${disabled ? 'cursor-not-allowed opacity-80' : ''}`}
             />
             </div>
         </div>
@@ -114,10 +119,10 @@ const QuizCard: React.FC<QuizCardProps> = ({
        {/* Footer Navigation */}
        <div className="flex-none px-6 py-4 bg-white border-t border-slate-200 flex justify-between items-center z-10 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
           <button 
-            onClick={onPrev}
-            disabled={questionIndex === 0}
+            onClick={() => !disabled && onPrev()}
+            disabled={disabled || questionIndex === 0}
             className={`flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wide
-              ${questionIndex === 0 
+              ${questionIndex === 0 || disabled
                 ? 'text-slate-300 bg-slate-100 cursor-not-allowed' 
                 : 'text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400'
               }
@@ -128,8 +133,9 @@ const QuizCard: React.FC<QuizCardProps> = ({
           </button>
           
           <button 
-            onClick={onNext}
-            className="flex items-center justify-center px-10 py-3 rounded-xl text-sm font-bold uppercase tracking-wide bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg transition-all"
+            onClick={() => !disabled && onNext()}
+            disabled={disabled}
+            className={`flex items-center justify-center px-10 py-3 rounded-xl text-sm font-bold uppercase tracking-wide ${disabled ? 'opacity-80 cursor-not-allowed bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg'} transition-all`}
           >
             {questionIndex === totalQuestions - 1 ? 'Finish Section' : 'Save & Next'}
             {questionIndex !== totalQuestions - 1 && <Icons.ChevronRight className="w-4 h-4 ml-2" />}

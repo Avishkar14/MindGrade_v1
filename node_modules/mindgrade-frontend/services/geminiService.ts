@@ -98,10 +98,10 @@ export const generateQuiz = async (topic: string, difficulty: string, count: num
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No content generated");
-    
-    return JSON.parse(text) as Question[];
+    const raw = response.candidates?.[0]?.content?.parts?.[0]?.text ?? response.text ?? '';
+    if (!raw) throw new Error("No content generated");
+
+    return JSON.parse(raw) as Question[];
   } catch (error) {
     console.error("Quiz Generation Error:", error);
     throw error;
@@ -165,12 +165,13 @@ export const evaluateQuiz = async (
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No evaluation generated");
+    const raw = response.candidates?.[0]?.content?.parts?.[0]?.text ?? response.text ?? '';
+    if (!raw) throw new Error("No evaluation generated");
 
-    return JSON.parse(text) as QuizResult;
+    return JSON.parse(raw) as QuizResult;
   } catch (error) {
     console.error("Evaluation Error:", error);
     throw error;
   }
 };
+// Note: Per-question reasoning evaluator was intentionally removed to rely on batch evaluateQuiz.
