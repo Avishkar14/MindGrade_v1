@@ -135,8 +135,8 @@ const TestSelectionPage: React.FC = () => {
         { id: 'o3', text: '₹1000' },
         { id: 'o4', text: '₹1100' }
       ],
-      correctOptionId: 'o1',
-      correctReasoning: 'Selling price = 1200*(0.9)=1080; if profit 20% => CP=1080/1.2=900? (check)' 
+      correctOptionId: 'o2',
+      correctReasoning: 'Selling price = 1200 × 0.9 = 1080. Since profit = 20%, CP = 1080 ÷ 1.2 = 900.' 
     },
     {
       id: '8-q10',
@@ -251,10 +251,10 @@ const TestSelectionPage: React.FC = () => {
       id: '9-q8',
       text: 'Which of the following equations has infinitely many solutions?',
       options: [
-        { id: 'o1', text: 'x + y = 7' },
-        { id: 'o2', text: 'x - y = 3' },
-        { id: 'o3', text: '2x + 2y = 14' },
-        { id: 'o4', text: 'x^2 + y = 5' }
+        { id: 'o1', text: '$x + y = 7$' },
+        { id: 'o2', text: '$x - y = 3$' },
+        { id: 'o3', text: '$2x + 2y = 14$' },
+        { id: 'o4', text: '$x^2 + y = 5$' }
       ],
       correctOptionId: 'o3',
       correctReasoning: '2x+2y=14 is same as x+y=7, infinitely many pairs.'
@@ -294,10 +294,10 @@ const TestSelectionPage: React.FC = () => {
       id: '10-q1',
       text: 'Which ordered pair satisfies the equation $2x + y = 7$?',
       options: [
-        { id: 'o1', text: '(1, 5)' },
-        { id: 'o2', text: '(2, 2)' },
-        { id: 'o3', text: '(3, 1)' },
-        { id: 'o4', text: '(4, -1)' }
+        { id: 'o1', text: '$(1, 5)$' },
+        { id: 'o2', text: '$(2, 2)$' },
+        { id: 'o3', text: '$(3, 1)$' },
+        { id: 'o4', text: '$(4, -1)$' }
       ],
       correctOptionId: 'o1',
       correctReasoning: 'Check pairs: 2*1+5=7.'
@@ -311,17 +311,17 @@ const TestSelectionPage: React.FC = () => {
         { id: 'o3', text: '6' },
         { id: 'o4', text: '-2' }
       ],
-      correctOptionId: 'o3',
-      correctReasoning: 'x = 4 + 2y => x = 4 + 2(-1) = 2? (check)'
+      correctOptionId: 'o1',
+      correctReasoning: 'x = 4 + 2(-1) = 2.'
     },
     {
       id: '10-q3',
       text: 'Which of the following is a quadratic equation?',
       options: [
-        { id: 'o1', text: 'x + 5 = 0' },
-        { id: 'o2', text: 'x^2 - 3x + 2 = 0' },
-        { id: 'o3', text: '2x - 7 = 0' },
-        { id: 'o4', text: 'x^3 + x = 0' }
+        { id: 'o1', text: '$x + 5 = 0$' },
+        { id: 'o2', text: '$x^2 - 3x + 2 = 0$' },
+        { id: 'o3', text: '$2x - 7 = 0$' },
+        { id: 'o4', text: '$x^3 + x = 0$' }
       ],
       correctOptionId: 'o2',
       correctReasoning: 'Quadratic has degree 2.'
@@ -340,15 +340,15 @@ const TestSelectionPage: React.FC = () => {
     },
     {
       id: '10-q5',
-      text: 'Find the 10th term of the AP: 3, 7, 11, \dots',
+      text: 'Find the 10th term of the AP: 3, 7, 11, ...',
       options: [
         { id: 'o1', text: '35' },
         { id: 'o2', text: '39' },
         { id: 'o3', text: '43' },
         { id: 'o4', text: '47' }
       ],
-      correctOptionId: 'o3',
-      correctReasoning: 'a=3,d=4 => a_n = 3 + (10-1)*4 = 39? (check)'
+      correctOptionId: 'o2',
+      correctReasoning: 'a = 3, d = 4 ⇒ a₁₀ = 3 + 9×4 = 39.'
     },
     {
       id: '10-q6',
@@ -359,8 +359,8 @@ const TestSelectionPage: React.FC = () => {
         { id: 'o3', text: '32' },
         { id: 'o4', text: '35' }
       ],
-      correctOptionId: 'o2',
-      correctReasoning: 'a_n = 5 + (8-1)*3 = 26? (check)'
+      correctOptionId: 'o1',
+      correctReasoning: 'a₈ = 5 + 7×3 = 26.'
     },
     {
       id: '10-q7',
@@ -407,8 +407,8 @@ const TestSelectionPage: React.FC = () => {
         { id: 'o3', text: '10' },
         { id: 'o4', text: '12' }
       ],
-      correctOptionId: 'o4',
-      correctReasoning: 'Total = 5*10=50; sum known = 40; x=10? (check)'
+      correctOptionId: 'o3',
+      correctReasoning: 'Total = 5×10 = 50. Sum of known values = 40, so x = 10.'
     }
   ];
 
