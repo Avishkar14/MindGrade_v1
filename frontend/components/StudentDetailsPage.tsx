@@ -3,22 +3,26 @@ import { useNavigate } from 'react-router-dom';
 
 const classOptions = ['6', '7', '8', '9', '10'];
 
-const validatePhone = (p: string) => {
-  const cleaned = p.replace(/\D/g, '');
-  return cleaned.length >= 7 && cleaned.length <= 15;
-};
+const validateName = (n: string) => /^[A-Za-z][A-Za-z\s'-]{1,49}$/.test(n);
+
+const validatePhone = (p: string) => /^\d{10}$/.test(p.replace(/\D/g, ''));
 
 const StudentDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [studentClass, setStudentClass] = useState('8');
   const [phone, setPhone] = useState('');
+  const [countryCode, setCountryCode] = useState('+91'); // default India
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({});
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
     const nextErrors: typeof errors = {};
     if (!name.trim()) nextErrors.name = 'Please enter student name';
+    if (!validateName(name.trim())) {
+      nextErrors.name = 'Enter a valid name (2-50 letters, letters, spaces, hyphen, apostrophe only)';
+    }
+
     if (!validatePhone(phone)) nextErrors.phone = 'Enter a valid phone number';
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length === 0) {
@@ -38,7 +42,7 @@ const StudentDetailsPage: React.FC = () => {
             <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.replace(/[^A-Za-z\s'-]/g, ''))}
               className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200"
               placeholder="Student name"
             />
@@ -60,13 +64,25 @@ const StudentDetailsPage: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200"
-              placeholder="Enter phone number"
-              inputMode="tel"
-            />
+            <div className="flex space-x-2">
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                className="w-32 px-3 py-2 border rounded-lg bg-white"
+              >
+                <option value="+91">+91 (India)</option>
+                <option value="+1">+1 (USA)</option>
+                <option value="+44">+44 (UK)</option>
+              </select>
+
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200"
+                placeholder="Enter 10-digit number"
+                inputMode="tel"
+              />
+            </div>
             {errors.phone && <div className="text-red-600 text-sm mt-1">{errors.phone}</div>}
           </div>
 

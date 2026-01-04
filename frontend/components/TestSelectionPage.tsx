@@ -80,7 +80,7 @@ const TestSelectionPage: React.FC = () => {
     },
     {
       id: '8-q5',
-      text: 'Find the coefficient of $x^2$ in the expansion of $(2x - 3)^2$',
+      text: 'Find the coefficient of \\(x^2\\) in the expansion of \\((2x - 3)^2\\)',
       options: [
         { id: 'o1', text: '4' },
         { id: 'o2', text: '-12' },
@@ -165,27 +165,27 @@ const TestSelectionPage: React.FC = () => {
   const class9Questions = [
     {
       id: '9-q1',
-      text: 'If A = {multiples of 3 less than 15}, B = {even numbers less than 10}, what is A \\cap B?',
+      text: 'If $A = \\{\\text{multiples of 3 less than 15}\\}$, $B = \\{\\text{even numbers less than 10}\\}$, what is $A \\cap B$?',
       options: [
-        { id: 'o1', text: '{3, 6, 9}' },
-        { id: 'o2', text: '{6, 12}' },
-        { id: 'o3', text: '{6}' },
-        { id: 'o4', text: '\\emptyset' }
+        { id: 'o1', text: '$\\{3, 6, 9, 12\\}$' },
+        { id: 'o2', text: '$\\{2, 4, 6, 8\\}$' },
+        { id: 'o3', text: '$\\{6\\}$' },
+        { id: 'o4', text: '$\\varnothing$' }
       ],
       correctOptionId: 'o3',
       correctReasoning: 'Only 6 is both a multiple of 3 and even below 15.'
     },
     {
       id: '9-q2',
-      text: 'If $A = \{x : x \text{ is a natural number and } x^2 < 30\}$, then A is:',
+      text: "If $A = \\{ x \\mid x \\text{ is a natural number and } x^2 < 30 \\}$, then $A$ is:",
       options: [
-        { id: 'o1', text: '{1, 2, 3, 4, 5}' },
-        { id: 'o2', text: '{1, 2, 3, 4}' },
-        { id: 'o3', text: '{1, 4, 9, 16}' },
-        { id: 'o4', text: '{2, 3, 4, 5}' }
+        { id: 'o1', text: "$\\{1, 2, 3, 4, 5\\}$" },
+        { id: 'o2', text: "$\\{1, 2, 3, 4\\}$" },
+        { id: 'o3', text: "$\\{1, 4, 9, 16\\}$" },
+        { id: 'o4', text: "$\\{2, 3, 4, 5\\}$" }
       ],
       correctOptionId: 'o1',
-      correctReasoning: 'Natural numbers whose square is less than 30: 1..5.'
+      correctReasoning: "Natural numbers whose square is less than 30: $\\{1, 2, 3, 4, 5\\}$"
     },
     {
       id: '9-q3',
